@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Iniciar Sesión</h1>
+        <nav id="main-nav">
+            <a href="./register.html" class="nav-link">Registrarse</a>
+            <a href="./index.html" class="nav-link">Inicio</a>
+        </nav>
+    </header>
+    <main>
+        <section class="form-container">
+            <h2>Accede a tu Cuenta</h2>
+            <form id="login-form">
+                <label for="login-username">Usuario:</label>
+                <input type="text" id="login-username" name="username" required>
+
+                <label for="login-password">Contraseña:</label>
+                <input type="password" id="login-password" name="password" required>
+
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            <p id="login-message" style="margin-top: 10px; font-weight: bold;"></p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Gestión de Eventos - Creado por Samuel Gutierrez Coba</p>
+    </footer>
+
+    <script type="module" src="../api/loginPage.js"></script>
+    <script type="module" src="../api/app.js"></script>
+</body>
+</html>

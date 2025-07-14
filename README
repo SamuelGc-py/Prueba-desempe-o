@@ -1,0 +1,93 @@
+🎯 Event Manager SPA
+
+Aplicación web de página única (SPA) para la gestión de eventos, desarrollada con JavaScript Vanilla, Vite y una base de datos simulada con json-server. Este proyecto implementa un sistema completo de autenticación por roles (admin, visitor), navegación dinámica, y funcionalidades CRUD protegidas.
+
+🌐 Tecnologías Utilizadas
+
+HTML5 / CSS3 / JavaScript (ESModules)
+
+Vite – Empaquetador rápido para desarrollo frontend
+
+json-server – Fake REST API para pruebas de backend
+
+LocalStorage – Persistencia de sesión
+
+TailwindCSS – (opcional) Utilidades CSS modernas
+
+📦 Estructura del Proyecto
+
+📦 event-manager-spa
+├── public/
+│   └── index.html
+├── src/
+│   ├── api/
+│   │   ├── api.js             # Funciones de acceso al backend json-server
+│   │   ├── auth.js            # Lógica de autenticación y sesión
+│   │   ├── app.js             # Renderizado dinámico y control de navbar
+│   │   ├── router.js          # Sistema de enrutamiento SPA
+│   │   ├── registerPage.js    # Lógica para la vista de registro
+│   │   ├── loginPage.js       # Lógica para la vista de inicio de sesión
+│   │   ├── dashboardPage.js   # Renderizado de eventos del usuario
+│   │   └── createEventPage.js # Creación de nuevos eventos
+│   ├── css/
+│   │   └── style.css          # Estilos personalizados
+├── db.json                    # Base de datos fake para json-server
+├── vite.config.js
+└── README.md
+
+🧑‍💼 Roles de Usuario
+
+Admin
+
+Crear, leer, editar y eliminar eventos.
+
+Acceder al panel de control.
+
+Visitor
+
+Puede registrarse e iniciar sesión.
+
+Ver los eventos disponibles.
+
+🔐 Autenticación y Seguridad
+
+Autenticación basada en LocalStorage.
+
+Lógica protegida según el rol del usuario.
+
+Redirección automática si intenta acceder a rutas restringidas.
+
+⚠ Nota de seguridad: Las contraseñas están en texto plano en db.json. Solo para fines educativos. En un entorno real, usar hashing (bcrypt) y autenticación JWT.
+
+ Funcionalidades
+
+ Registro e inicio de sesión
+
+ Gestión de sesión local
+
+ Crear y ver eventos
+
+ Navegación protegida por rol
+
+ Feedback visual (errores, validaciones y confirmaciones)
+
+ SPA sin recargas de página
+
+ Instrucciones de Instalación
+-----------------------------------------------------------
+Instalar dependencias:
+
+npm install
+
+Ejecutar json-server:
+
+npx json-server --watch db.json --port 3000
+
+Iniciar Vite para desarrollo:
+
+npm run dev
+
+👨‍💻 Autoría
+
+Proyecto creado por Samuel Gutierrez Coba – Clan macondo como parte del módulo de desempeño en desarrollo web (JavaScript SPA).
+
