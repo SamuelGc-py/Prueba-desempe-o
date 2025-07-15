@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // initRouter();
                 // Redirige al dashboard
                 setTimeout(() => {
-                    window.location.href = './dashboard.html'; // Ruta relativa desde pages/
+                    window.location.href = './index.html';// Ruta relativa desde pages/
                 }, 1500); // 1.5 segundos
             } catch (error) {
                 loginMessage.textContent = `${error.message}`;
