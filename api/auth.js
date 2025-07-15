@@ -1,128 +1,98 @@
-// api/auth.js
-
-import { createUser, getUserByUsername } from './api.js'; // Asegúrate que esta ruta sea correcta dentro de la carpeta 'api'
-
 const LOCAL_STORAGE_KEY = 'currentUser';
+const BASE_URL = 'http://localhost:3000';
 
-/**
- * Obtiene el usuario autenticado desde Local Storage.
- * @returns {object|null} El objeto de usuario autenticado o null si no hay ninguno.
- */
-export function getAuthenticatedUser() {
-    try {
-        const user = localStorage.getItem(LOCAL_STORAGE_KEY);
-        return user ? JSON.parse(user) : null;
-    } catch (e) {
-        console.error("Error al parsear el usuario de Local Storage:", e);
-        return null;
-    }
+/* === Funciones auxiliares === */
+
+export async function getUserByUsername(username) {
+    const res = await fetch(`${BASE_URL}/users?username=${encodeURIComponent(username)}`);
+    if (!res.ok) throw new Error('Error al buscar usuario');
+    const users = await res.json();
+    return users[0] || null;
 }
 
-/**
- * Almacena la información del usuario autenticado en Local Storage.
- * @param {object} user - El objeto de usuario a almacenar.
- */
+export async function createUser(userData) {
+    const res = await fetch(`${BASE_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+    });
+    if (!res.ok) throw new Error('Error al crear usuario');
+    return await res.json();
+}
+
+/* === Manejo de sesión === */
+
 export function setAuthenticatedUser(user) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(user));
 }
 
-/**
- * Elimina la información del usuario autenticado de Local Storage.
- */
+export function getAuthenticatedUser() {
+    const user = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return user ? JSON.parse(user) : null;
+}
+
 export function clearAuthenticatedUser() {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
 }
 
-/**
-  Intenta registrar un nuevo usuario.
-@param {string} username - Nombre de usuario para el registro.
-@param {string} password - Contraseña para el registro.
-@param {string} role - Rol del usuario ('admin' o 'visitor').
-@returns {Promise<object>} El usuario creado exitosamente.
-@throws {Error} Si faltan campos, el usuario ya existe o hay un error al crear.
- */
-export async function registerUser(username, password, role) {
-    // 1. Validación de campos vacíos
+/* === Registro de usuario === */
+export async function registerUser(username, password, role = 'visitor') {
     if (!username || !password || !role) {
-        throw new Error('Por favor, completa todos los campos requeridos (Usuario, Contraseña, Rol).');
+        throw new Error('Completa todos los campos.');
     }
 
-    // 2. Verificar si el usuario ya existe
-    try {
-        const existingUser = await getUserByUsername(username);
-        if (existingUser) {
-            throw new Error('Este nombre de usuario ya está en uso. Por favor, elige otro.');
-        }
-    } catch (error) {
-        // Si hay un error de red o de la API al verificar el usuario, relanzar
-        if (error.message.includes('Error HTTP')) { // Ejemplo para errores de red/servidor
-            throw new Error(`Error al verificar usuario existente: ${error.message}`);
-        } else {
-             // Si el error ya es del tipo "usuario existe", simplemente lo relanzamos
-            throw error;
-        }
+    const existingUser = await getUserByUsername(username);
+    if (existingUser) {
+        throw new Error('El nombre de usuario ya existe.');
     }
 
-
-    // 3. Crear el nuevo usuario
     const newUser = {
-        id: crypto.randomUUID(), // Genera un ID único para el usuario (para json-server)
+        id: crypto.randomUUID(),
         username,
-        password, // IMPORTANTE: En una aplicación real, NUNCA almacenes contraseñas sin hashear.
+        password,
         role
     };
 
-    try {
-        const createdUser = await createUser(newUser);
-        return createdUser;
-    } catch (error) {
-        // Capturar errores de la función `createUser` (p.ej., problemas de conexión con json-server)
-        throw new Error(`Error al crear el usuario: ${error.message}`);
-    }
+    return await createUser(newUser);
 }
 
-/**
- * Intenta iniciar sesión con las credenciales proporcionadas.
- * @param {string} username - Nombre de usuario para el inicio de sesión.
- * @param {string} password - Contraseña para el inicio de sesión.
- * @returns {Promise<object>} El usuario autenticado (sin la contraseña).
- * @throws {Error} Si faltan campos o las credenciales son inválidas.
- */
+/* === Login con actualización de lastLogin === */
 export async function loginUser(username, password) {
-    // 1. Validación de campos vacíos
     if (!username || !password) {
         throw new Error('Por favor, ingresa tu nombre de usuario y contraseña.');
     }
 
-    // 2. Buscar al usuario por nombre de usuario
-    let user;
-    try {
-        user = await getUserByUsername(username);
-    } catch (error) {
-        // Si hay un error de red o de la API al buscar el usuario
-        throw new Error(`Error al intentar conectar con el servidor: ${error.message}`);
-    }
-
-    // 3. Verificar credenciales
-    // En una aplicación real, aquí compararías la contraseña hasheada
+    let user = await getUserByUsername(username);
     if (!user || user.password !== password) {
-        throw new Error('Usuario o contraseña incorrectos. Por favor, verifica tus credenciales.');
+        throw new Error('Usuario o contraseña incorrectos.');
     }
 
-    // 4. Almacenar información de la sesión y retornar usuario
+    const lastLogin = new Date().toISOString();
+
+    try {
+        const res = await fetch(`${BASE_URL}/users/${user.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lastLogin })
+        });
+
+        if (!res.ok) throw new Error('No se pudo actualizar el último acceso.');
+        user.lastLogin = lastLogin;
+    } catch (error) {
+        console.error('Error al actualizar lastLogin:', error.message);
+    }
+
     const sessionUser = {
         id: user.id,
         username: user.username,
-        role: user.role
+        role: user.role,
+        lastLogin: user.lastLogin
     };
 
     setAuthenticatedUser(sessionUser);
     return sessionUser;
 }
 
-/**
- * Cierra la sesión del usuario actual.
- */
 export function logoutUser() {
     clearAuthenticatedUser();
 }
